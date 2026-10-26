@@ -96,9 +96,27 @@ body {
   overflow-x: hidden;
 }
 
-img, svg {
+/* Fluid global image controls & Core Web Vitals CLS prevention */
+img {
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: attr(width) / attr(height);
+  display: block;
+}
+
+svg {
   display: block;
   max-width: 100%;
+}
+
+/* Core Web Vitals: Layout Stability & CLS Optimization */
+.gallery-section,
+.offerings-section,
+.infrastructure-section,
+.reviews-section,
+.faq-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 650px;
 }
 
 a {
@@ -1289,6 +1307,142 @@ body[data-lang="hi"] .hero-heading {
 }
 
 /* --------------------------------------------------------------------------
+   SEMANTIC CURRICULUM & GRADE SPECTRUM TABLE
+   -------------------------------------------------------------------------- */
+.grades-curriculum-container {
+  margin-top: 3.5rem;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 2.25rem;
+  box-shadow: var(--shadow-md);
+  transition: box-shadow var(--transition-base);
+}
+
+.grades-curriculum-container:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.grades-table-header {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.grades-table-title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  margin-top: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.grades-table-subtitle {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.grades-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+
+.grades-curriculum-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9375rem;
+  background-color: var(--color-white);
+  min-width: 620px;
+}
+
+.grades-curriculum-table thead {
+  background-color: var(--color-primary-subtle);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.grades-curriculum-table th[scope="col"] {
+  padding: 1rem 1.25rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--color-primary-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.grades-curriculum-table tbody tr {
+  border-bottom: 1px solid var(--color-border-light);
+  transition: background-color var(--transition-fast);
+}
+
+.grades-curriculum-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.grades-curriculum-table tbody tr:hover {
+  background-color: #F8FAFC;
+}
+
+.grades-curriculum-table th[scope="row"] {
+  padding: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  vertical-align: top;
+  width: 26%;
+}
+
+.grades-curriculum-table td {
+  padding: 1.25rem;
+  color: var(--color-text-muted);
+  vertical-align: top;
+  line-height: 1.55;
+}
+
+.grades-curriculum-table td:nth-child(2) {
+  width: 18%;
+  color: var(--color-primary-dark);
+  white-space: nowrap;
+}
+
+.grades-curriculum-table td:nth-child(3) {
+  width: 56%;
+}
+
+.level-badge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.35rem;
+}
+
+.badge-foundational {
+  background-color: var(--color-secondary-subtle);
+  color: var(--color-secondary);
+}
+
+.badge-middle {
+  background-color: var(--color-primary-subtle);
+  color: var(--color-primary);
+}
+
+.level-sub {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+
+/* --------------------------------------------------------------------------
    9. CAMPUS INFRASTRUCTURE HIGHLIGHTS
    -------------------------------------------------------------------------- */
 .infrastructure-section {
@@ -1402,10 +1556,12 @@ body[data-lang="hi"] .hero-heading {
   box-shadow: 0 4px 12px rgba(37, 88, 184, 0.28);
 }
 
+.campus-gallery-grid,
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
+  width: 100%;
 }
 
 .gallery-card {
@@ -1430,20 +1586,27 @@ body[data-lang="hi"] .hero-heading {
   display: none !important;
 }
 
+/* Dedicated .gallery-card-wrapper Frame Preset (Hardcoded 240px Height & Object-Fit Cover for CLS elimination) */
+.gallery-card-wrapper,
 .gallery-img-wrap {
   position: relative;
-  aspect-ratio: 4 / 3;
+  width: 100%;
+  height: 240px;
   overflow: hidden;
   background-color: #E2E8F0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
+.gallery-card-wrapper img,
 .gallery-img-wrap img {
   width: 100%;
-  height: 100%;
+  height: 240px;
   object-fit: cover;
+  display: block;
   transition: transform var(--transition-slow);
 }
 
+.gallery-card:hover .gallery-card-wrapper img,
 .gallery-card:hover .gallery-img-wrap img {
   transform: scale(1.08);
 }
@@ -2809,6 +2972,21 @@ body[data-lang="hi"] .hero-heading {
     gap: 0.75rem;
   }
 
+
+  /* Curriculum Table Mobile Adjustments */
+  .grades-curriculum-container {
+    padding: 1.5rem 1rem;
+    margin-top: 2.5rem;
+  }
+  .grades-table-title {
+    font-size: 1.25rem;
+  }
+  .grades-curriculum-table th[scope="row"],
+  .grades-curriculum-table td {
+    padding: 0.875rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
   /* Floating mobile bottom navigation bar */
   .floating-mobile-bar {
     display: flex;
@@ -2834,6 +3012,7 @@ body[data-lang="hi"] .hero-heading {
     margin: 0.5rem 0;
   }
 }
+
 
 /* SMALL SMARTPHONES (max-width: 480px) */
 @media (max-width: 480px) {

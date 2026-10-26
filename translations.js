@@ -281,7 +281,7 @@
       faq_tag: "Parent Queries",
       faq_title: "Frequently Asked Questions",
       faq_q1: "Which residential areas in Ganj Basoda are covered by your safe school transport facility?",
-      faq_a1_html: "<p><strong>Learnify Public School</strong> operates an extensive, child-safe school transport network covering all major neighborhoods across Ganj Basoda (M.P.). Our dedicated fleet connects families along <strong>Tyonda Road, Ghungroo Garden, Station Road, Rajiv Nagar, Bareth Road, Udaipur Road, Mill Road</strong>, and surrounding residential colonies.</p><p>To guarantee complete peace of mind, every vehicle is driven by vetted drivers and accompanied by dedicated <strong>female attendants (<em>didis</em>)</strong> who supervise boarding, seating, and doorstep handovers. For specific pick-up points and timing inquiries, call our transport desk at <strong>+91 94060 37165</strong>.</p>",
+      faq_a1_html: "<p><strong>Learnify Public School</strong> operates an extensive, child-safe school transport network covering all major neighborhoods across Ganj Basoda (M.P.). Our dedicated fleet connects families along <strong>Tyonda Road</strong>, <strong>Ghungroo Garden</strong>, <strong>Station Road</strong>, <strong>Rajiv Nagar</strong>, <strong>Bareth Road</strong>, <strong>Udaipur Road</strong>, <strong>Mill Road</strong>, and surrounding residential colonies.</p><p>To guarantee complete peace of mind, every vehicle is driven by vetted drivers and accompanied by dedicated <strong>female attendants (<em>didis</em>)</strong> who supervise boarding, seating, and doorstep handovers. For specific pick-up points and timing inquiries, call our transport desk at <strong>+91 94060 37165</strong>.</p>",
       faq_q2: "What is the admission process for the 2026–2027 academic session, and what are the age criteria?",
       faq_a2_html: "<p><strong>Ganj Basoda school admissions</strong> for the <strong>2026–2027 academic session</strong> are officially open from <strong>Play Group to Class 8th</strong>. We follow a welcoming, child-friendly interaction model with zero intimidating tests:</p><ul><li><strong>Play Group:</strong> Minimum 2 to 2.5 years of age.</li><li><strong>Nursery:</strong> Minimum 3 years of age.</li><li><strong>LKG &amp; UKG:</strong> 4 to 5 years of age.</li><li><strong>Classes 1st to 8th:</strong> Age-appropriate admissions based on foundational readiness.</li></ul><p>Parents can collect admission forms from our campus on <strong>Tyonda Road (Opposite Hotel Yogeshwari)</strong> during visiting hours (Mon–Fri 9 AM–2 PM, Sat 10 AM–1 PM) or initiate an inquiry via WhatsApp/call at <strong>+91 91740 00988</strong>.</p>",
       faq_q3: "How does the \"Learn with Fun\" activity-based curriculum differ from traditional schools in Ganj Basoda MP?",
@@ -830,7 +830,7 @@
     });
 
     // 8. Update Select Dropdown options for #target-grade
-    const gradeSelect = document.getElementById('target-grade');
+    const gradeSelect = document.getElementById('selectedGrade') || document.getElementById('target-grade');
     if (gradeSelect && langData.grade_options) {
       const defaultOption = gradeSelect.querySelector('option[value=""]');
       if (defaultOption && langData.form_grade_default) {

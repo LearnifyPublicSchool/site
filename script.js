@@ -335,198 +335,250 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* --------------------------------------------------------------------------
-     5. ADMISSION INQUIRY FORM VALIDATION & SUBMISSION
+     5. DYNAMIC FORM STREAMLINING CONTROLLER (#admissionInquiryForm)
      -------------------------------------------------------------------------- */
-  const admissionForm = document.getElementById('admission-form');
-  const submitBtn = document.getElementById('submit-btn');
-  const btnText = submitBtn ? submitBtn.querySelector('.btn-text') : null;
-  const btnSpinner = submitBtn ? submitBtn.querySelector('.btn-spinner') : null;
+  const initAdmissionFormController = () => {
+    const form = document.getElementById('admissionInquiryForm') || document.getElementById('admission-form');
+    if (!form) return;
 
-  // Modal Elements
-  const successModal = document.getElementById('success-modal');
-  const closeModalBtn = document.getElementById('close-modal-btn');
-  const modalParentName = document.getElementById('modal-parent-name');
-  const modalChildGrade = document.getElementById('modal-child-grade');
-  const modalPhone = document.getElementById('modal-phone');
+    // Field element selectors with robust fallbacks
+    const parentNameInput = document.getElementById('parentName') || document.getElementById('parent-name');
+    const mobileNumberInput = document.getElementById('mobileNumber') || document.getElementById('contact-phone');
+    const childAgeInput = document.getElementById('childAge') || document.getElementById('child-age');
+    const selectedGradeSelect = document.getElementById('selectedGrade') || document.getElementById('target-grade');
+    const transportNotesInput = document.getElementById('transportNotes') || document.getElementById('inquiry-message');
 
-  // Input Field References
-  const parentNameInput = document.getElementById('parent-name');
-  const contactPhoneInput = document.getElementById('contact-phone');
-  const childAgeInput = document.getElementById('child-age');
-  const targetGradeSelect = document.getElementById('target-grade');
-  const inquiryMessageInput = document.getElementById('inquiry-message');
+    // UI Buttons and Feedback Elements
+    const submitBtn = document.getElementById('submit-btn');
+    const btnText = submitBtn ? submitBtn.querySelector('.btn-text') : null;
+    const btnSpinner = submitBtn ? submitBtn.querySelector('.btn-spinner') : null;
 
-  // Error Text Elements
-  const parentNameError = document.getElementById('parent-name-error');
-  const contactPhoneError = document.getElementById('contact-phone-error');
-  const childAgeError = document.getElementById('child-age-error');
-  const targetGradeError = document.getElementById('target-grade-error');
+    // Modal elements
+    const successModal = document.getElementById('success-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const modalParentName = document.getElementById('modal-parent-name');
+    const modalChildGrade = document.getElementById('modal-child-grade');
+    const modalPhone = document.getElementById('modal-phone');
+    const modalWaLink = document.getElementById('modal-whatsapp-link');
 
-  const clearErrors = () => {
-    [parentNameError, contactPhoneError, childAgeError, targetGradeError].forEach((el) => {
-      if (el) el.textContent = '';
-    });
-    [parentNameInput, contactPhoneInput, childAgeInput, targetGradeSelect].forEach((input) => {
-      if (input) input.classList.remove('is-invalid');
-    });
-  };
+    // Field-level error containers
+    const parentNameError = document.getElementById('parentName-error') || document.getElementById('parent-name-error');
+    const mobileNumberError = document.getElementById('mobileNumber-error') || document.getElementById('contact-phone-error');
+    const childAgeError = document.getElementById('childAge-error') || document.getElementById('child-age-error');
+    const selectedGradeError = document.getElementById('selectedGrade-error') || document.getElementById('target-grade-error');
 
-  const validateForm = () => {
-    let isValid = true;
-    clearErrors();
+    // Dynamic sanitization helper: strips HTML tags and escapes special characters
+    const sanitizeInput = (val) => {
+      if (typeof val !== 'string') return '';
+      return val
+        .replace(/<[^>]*>/g, '')
+        .replace(/[<>&"']/g, (match) => {
+          const map = { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#x27;' };
+          return map[match] || match;
+        })
+        .trim();
+    };
 
-    // 1. Parent Name Validation
-    const nameVal = parentNameInput.value.trim();
-    if (!nameVal || nameVal.length < 3) {
-      parentNameError.textContent = typeof window.t === 'function' 
-        ? window.t('val_name_error') 
-        : 'Please provide a valid full parent name (min 3 characters).';
-      parentNameInput.classList.add('is-invalid');
-      isValid = false;
-    }
+    const clearFieldErrors = () => {
+      [parentNameError, mobileNumberError, childAgeError, selectedGradeError].forEach((el) => {
+        if (el) el.textContent = '';
+      });
+      [parentNameInput, mobileNumberInput, childAgeInput, selectedGradeSelect].forEach((input) => {
+        if (input) input.classList.remove('is-invalid');
+      });
+    };
 
-    // 2. Phone Validation (10 digits)
-    const phoneVal = contactPhoneInput.value.trim();
-    const phoneRegex = /^[6-9]\d{9}$/; // Standard 10-digit Indian Mobile Pattern starting 6-9
-    const general10Digit = /^\d{10}$/;
+    const validateForm = () => {
+      let isValid = true;
+      clearFieldErrors();
 
-    if (!phoneVal) {
-      contactPhoneError.textContent = typeof window.t === 'function' 
-        ? window.t('val_phone_required') 
-        : 'Contact number is required.';
-      contactPhoneInput.classList.add('is-invalid');
-      isValid = false;
-    } else if (!general10Digit.test(phoneVal)) {
-      contactPhoneError.textContent = typeof window.t === 'function' 
-        ? window.t('val_phone_invalid') 
-        : 'Please enter a valid 10-digit phone number without spaces or symbols.';
-      contactPhoneInput.classList.add('is-invalid');
-      isValid = false;
-    }
+      // 1. Parent Name Validation (min 3 chars)
+      const rawName = parentNameInput ? parentNameInput.value.trim() : '';
+      if (!rawName || rawName.length < 3) {
+        if (parentNameError) {
+          parentNameError.textContent = typeof window.t === 'function'
+            ? window.t('val_name_error')
+            : 'Please enter a valid parent or guardian name (minimum 3 characters).';
+        }
+        if (parentNameInput) parentNameInput.classList.add('is-invalid');
+        isValid = false;
+      }
 
-    // 3. Child Age Validation
-    const ageVal = parseInt(childAgeInput.value, 10);
-    if (!ageVal || isNaN(ageVal) || ageVal < 2 || ageVal > 15) {
-      childAgeError.textContent = typeof window.t === 'function' 
-        ? window.t('val_age_error') 
-        : 'Enter child age between 2 and 15 years.';
-      childAgeInput.classList.add('is-invalid');
-      isValid = false;
-    }
+      // 2. Mobile Number Validation (10-digit mobile number)
+      const rawPhone = mobileNumberInput ? mobileNumberInput.value.trim().replace(/\D/g, '') : '';
+      const general10Digit = /^\d{10}$/;
 
-    // 4. Target Grade Selection
-    const gradeVal = targetGradeSelect.value;
-    if (!gradeVal) {
-      targetGradeError.textContent = typeof window.t === 'function' 
-        ? window.t('val_grade_error') 
-        : 'Please select the grade you are applying for.';
-      targetGradeSelect.classList.add('is-invalid');
-      isValid = false;
-    }
+      if (!rawPhone) {
+        if (mobileNumberError) {
+          mobileNumberError.textContent = typeof window.t === 'function'
+            ? window.t('val_phone_required')
+            : 'Contact mobile number is required.';
+        }
+        if (mobileNumberInput) mobileNumberInput.classList.add('is-invalid');
+        isValid = false;
+      } else if (!general10Digit.test(rawPhone)) {
+        if (mobileNumberError) {
+          mobileNumberError.textContent = typeof window.t === 'function'
+            ? window.t('val_phone_invalid')
+            : 'Please enter a valid 10-digit mobile number.';
+        }
+        if (mobileNumberInput) mobileNumberInput.classList.add('is-invalid');
+        isValid = false;
+      }
 
-    return isValid;
-  };
+      // 3. Child Age Validation (2 - 15 years)
+      const rawAge = childAgeInput ? parseInt(childAgeInput.value.trim(), 10) : 0;
+      if (!rawAge || isNaN(rawAge) || rawAge < 2 || rawAge > 15) {
+        if (childAgeError) {
+          childAgeError.textContent = typeof window.t === 'function'
+            ? window.t('val_age_error')
+            : 'Child age must be between 2 and 15 years.';
+        }
+        if (childAgeInput) childAgeInput.classList.add('is-invalid');
+        isValid = false;
+      }
 
-  if (admissionForm) {
-    admissionForm.addEventListener('submit', (e) => {
+      // 4. Grade Selection Validation
+      const rawGrade = selectedGradeSelect ? selectedGradeSelect.value : '';
+      if (!rawGrade) {
+        if (selectedGradeError) {
+          selectedGradeError.textContent = typeof window.t === 'function'
+            ? window.t('val_grade_error')
+            : 'Please select an academic grade.';
+        }
+        if (selectedGradeSelect) selectedGradeSelect.classList.add('is-invalid');
+        isValid = false;
+      }
+
+      return isValid;
+    };
+
+    // Attach submit event listener to the form
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
 
       if (!validateForm()) {
         return;
       }
 
-      // Enter Loading State
+      // UI Loading Feedback
       if (submitBtn) submitBtn.disabled = true;
-      if (btnText) btnText.textContent = typeof window.t === 'function' 
-        ? window.t('val_submitting') 
-        : 'Connecting to WhatsApp...';
+      if (btnText) {
+        btnText.textContent = typeof window.t === 'function'
+          ? window.t('val_submitting')
+          : 'Connecting to WhatsApp...';
+      }
       if (btnSpinner) btnSpinner.style.display = 'inline-block';
 
-      // Capture entered values
-      const enteredParent = parentNameInput ? parentNameInput.value.trim() : '';
-      const enteredPhone = contactPhoneInput ? contactPhoneInput.value.trim() : '';
-      const enteredAge = childAgeInput ? childAgeInput.value.trim() : '';
-      const enteredGrade = targetGradeSelect ? targetGradeSelect.value : '';
-      const enteredNotes = inquiryMessageInput ? inquiryMessageInput.value.trim() : '';
+      // Gather and dynamically sanitize input values from identifiers:
+      // #parentName, #mobileNumber, #childAge, #selectedGrade, #transportNotes
+      const parentName = sanitizeInput(parentNameInput ? parentNameInput.value : '');
+      const mobileNumber = sanitizeInput(mobileNumberInput ? mobileNumberInput.value : '').replace(/\D/g, '');
+      const childAge = sanitizeInput(childAgeInput ? childAgeInput.value : '');
+      const selectedGrade = sanitizeInput(selectedGradeSelect ? selectedGradeSelect.value : '');
+      const transportNotes = sanitizeInput(transportNotesInput ? transportNotesInput.value : '');
 
-      // Format WhatsApp Message for Direct Dispatch (Bilingual Context)
-      const schoolWhatsAppNumber = '919406037165';
+      // Direct WhatsApp Line for LPS Admissions Desk
+      const targetWhatsAppLine = '919406037165';
       const isHindi = typeof window.getCurrentLanguage === 'function' && window.getCurrentLanguage() === 'hi';
-      const waText = isHindi
-        ? `*नया प्रवेश पूछताछ (New Admission Inquiry) - Learnify Public School*\n` +
-          `----------------------------------------\n` +
-          `👤 *अभिभावक का नाम (Parent Name):* ${enteredParent}\n` +
-          `📞 *मोबाइल नंबर (Contact Number):* +91 ${enteredPhone}\n` +
-          `🎂 *बच्चे की आयु (Child's Age):* ${enteredAge} वर्ष (Years)\n` +
-          `📚 *कक्षा (Grade Applying For):* ${enteredGrade}\n` +
-          (enteredNotes ? `💬 *नोट / ट्रांसपोर्ट (Notes):* ${enteredNotes}\n` : ``) +
-          `📅 *सत्र (Session):* 2026-27\n` +
-          `----------------------------------------\n` +
-          `कृपया प्रवेश नियम एवं स्कूल भ्रमण (Campus Visit) की जानकारी साझा करें।`
-        : `*New Admission Inquiry - Learnify Public School*\n` +
-          `----------------------------------------\n` +
-          `👤 *Parent Name:* ${enteredParent}\n` +
-          `📞 *Contact Number:* +91 ${enteredPhone}\n` +
-          `🎂 *Child's Age:* ${enteredAge} Years\n` +
-          `📚 *Grade Applying For:* ${enteredGrade}\n` +
-          (enteredNotes ? `💬 *Notes / Transport:* ${enteredNotes}\n` : ``) +
-          `📅 *Session:* 2026-27\n` +
-          `----------------------------------------\n` +
-          `Please share admission guidelines and schedule our campus visit.`;
 
-      const whatsappUrl = `https://wa.me/${schoolWhatsAppNumber}?text=${encodeURIComponent(waText)}`;
+      // Professional, pre-formatted multi-line template string
+      const messageLines = isHindi
+        ? [
+            `*नया प्रवेश पूछताछ (New Admission Inquiry) - Learnify Public School*`,
+            `----------------------------------------`,
+            `👤 *अभिभावक का नाम (Parent Name):* ${parentName}`,
+            `📞 *मोबाइल नंबर (Contact Number):* +91 ${mobileNumber}`,
+            `🎂 *बच्चे की आयु (Child's Age):* ${childAge} वर्ष (Years)`,
+            `📚 *कक्षा (Grade Applying For):* ${selectedGrade}`,
+            transportNotes ? `🚌 *परिवहन / नोट्स (Transport & Notes):* ${transportNotes}` : `🚌 *परिवहन / नोट्स (Transport & Notes):* परिसर पूछताछ (No specific bus notes)`,
+            `📅 *शैक्षणिक सत्र (Session):* 2026–2027`,
+            `🏫 *कैंपस:* त्योदा रोड, होटल योगेश्वरी के सामने, गंज बासोदा`,
+            `----------------------------------------`,
+            `कृपया प्रवेश प्रक्रिया, शुल्क संरचना एवं स्कूल भ्रमण (Campus Visit) का समय साझा करें।`
+          ]
+        : [
+            `*New Admission Inquiry - Learnify Public School, Ganj Basoda*`,
+            `----------------------------------------`,
+            `👤 *Parent / Guardian Name:* ${parentName}`,
+            `📞 *Contact Number:* +91 ${mobileNumber}`,
+            `🎂 *Child's Age:* ${childAge} Years`,
+            `📚 *Grade Applying For:* ${selectedGrade}`,
+            transportNotes ? `🚌 *Transport / Notes:* ${transportNotes}` : `🚌 *Transport / Notes:* Campus inquiry (No special route notes)`,
+            `📅 *Academic Session:* 2026–2027`,
+            `🏫 *Campus:* Tyonda Road, Opp. Hotel Yogeshwari, Ganj Basoda`,
+            `----------------------------------------`,
+            `Please share fee structure details, admission guidelines, and campus visit schedule.`
+          ];
 
-      // Direct WhatsApp Transmission
+      const formattedMessage = messageLines.join('\n');
+      const encodedMessage = encodeURIComponent(formattedMessage);
+      const whatsappEndpointUrl = `https://wa.me/${targetWhatsAppLine}?text=${encodedMessage}`;
+
+      // Programmatic Fallback Handling:
+      // Try opening in a new tab via window.open; if a popup blocker interrupts or returns null/closed,
+      // fallback to direct viewport navigation via window.location.href.
+      let popupSuccessful = false;
       try {
-        window.open(whatsappUrl, '_blank');
+        const popupWin = window.open(whatsappEndpointUrl, '_blank', 'noopener,noreferrer');
+        if (popupWin && !popupWin.closed && typeof popupWin.closed !== 'undefined') {
+          popupSuccessful = true;
+        }
       } catch (err) {
-        console.warn('Popup blocked, modal provides manual link fallback.', err);
+        popupSuccessful = false;
       }
 
-      setTimeout(() => {
-        // Reset button states
-        if (submitBtn) submitBtn.disabled = false;
-        if (btnText) btnText.textContent = typeof window.t === 'function' 
-          ? window.t('form_submit_btn') 
-          : 'Submit Inquiry via WhatsApp';
-        if (btnSpinner) btnSpinner.style.display = 'none';
+      if (!popupSuccessful) {
+        // Fallback directly to window.location.href
+        setTimeout(() => {
+          window.location.href = whatsappEndpointUrl;
+        }, 300);
+      }
 
-        // Populate and open success modal
-        if (modalParentName) modalParentName.textContent = enteredParent;
-        if (modalChildGrade) modalChildGrade.textContent = enteredGrade;
-        if (modalPhone) modalPhone.textContent = `+91 ${enteredPhone}`;
+      // Populate Success Modal Details
+      if (modalParentName) modalParentName.textContent = parentName;
+      if (modalChildGrade) modalChildGrade.textContent = selectedGrade;
+      if (modalPhone) modalPhone.textContent = `+91 ${mobileNumber}`;
+      if (modalWaLink) modalWaLink.href = whatsappEndpointUrl;
 
-        const modalWaLink = document.getElementById('modal-whatsapp-link');
+      if (successModal) {
+        successModal.style.display = 'flex';
         if (modalWaLink) {
-          modalWaLink.href = whatsappUrl;
+          modalWaLink.focus();
+        } else if (closeModalBtn) {
+          closeModalBtn.focus();
         }
+      }
 
-        if (successModal) {
-          successModal.style.display = 'flex';
-          if (modalWaLink) {
-            modalWaLink.focus();
-          } else if (closeModalBtn) {
-            closeModalBtn.focus();
-          }
+      // Full reset call invoked on form fields immediately following processing execution
+      form.reset();
+      clearFieldErrors();
+
+      // Restore submit button state after execution
+      setTimeout(() => {
+        if (submitBtn) submitBtn.disabled = false;
+        if (btnText) {
+          btnText.textContent = typeof window.t === 'function'
+            ? window.t('form_submit_btn')
+            : 'Submit Inquiry via WhatsApp';
         }
-
-        // Reset form inputs
-        admissionForm.reset();
-        clearErrors();
-      }, 600);
+        if (btnSpinner) btnSpinner.style.display = 'none';
+      }, 800);
     });
 
-    // Clear field-level error dynamically when user types
-    [parentNameInput, contactPhoneInput, childAgeInput, targetGradeSelect].forEach((input) => {
+    // Real-time error dismissal when user interacts with inputs
+    [parentNameInput, mobileNumberInput, childAgeInput, selectedGradeSelect].forEach((input) => {
       if (input) {
         input.addEventListener('input', () => {
           input.classList.remove('is-invalid');
-          const errorSpan = document.getElementById(`${input.id}-error`);
+          const errorSpan = document.getElementById(`${input.id}-error`) || document.getElementById(`${input.name}-error`);
           if (errorSpan) errorSpan.textContent = '';
         });
       }
     });
-  }
+  };
+
+  initAdmissionFormController();
 
   /* --------------------------------------------------------------------------
      6. SUCCESS MODAL CONTROLS
