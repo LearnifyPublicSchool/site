@@ -366,8 +366,8 @@
 
       // Top Utility Bar
       top_motto_label: "ध्येय: ",
-      top_motto_val: "खेल-खेल में सीखें (Learn with Fun)",
-      top_timing: "सोम–शुक्र: सुबह 9:00 – दोपहर 2:00 | शनि: सुबह 10:00 – दोपहर 1:00",
+      top_motto_val: "खेल-खेल में सीखें",
+      top_timing: "सोम–शुक्र: 9:00 AM – 2:00 PM | शनि: 10:00 AM – 1:00 PM",
       top_location: "गंज बासोदा (म.प्र.)",
 
       // Navigation Bar
