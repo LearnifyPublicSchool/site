@@ -21,6 +21,7 @@ site/
 ├── index.html           # Semantic HTML5 architecture & content
 ├── style.css            # Responsive CSS3 styles with CSS custom properties
 ├── script.js            # Vanilla JS for navigation, form validation, gallery & lightbox
+├── translations.js      # Complete bilingual dictionary (English & Hindi) and i18n logic
 └── README.md            # Documentation and deployment instructions
 ```
 
@@ -28,6 +29,13 @@ site/
 
 ## 🚀 Key Features
 
+0. **Full Bilingual Support (English & Hindi / हिन्दी)**:
+   - Instant client-side language switching without page reloads.
+   - Elegant language switcher pill in the sticky navbar, top utility bar, and mobile navigation drawer.
+   - Comprehensive, culturally accurate Devanagari translation tailored for families in Ganj Basoda and Madhya Pradesh.
+   - Integrated with Google Fonts **Noto Sans Devanagari** for typographic rendering.
+   - State persistence via localStorage and query parameter deep-linking support (?lang=hi).
+   - Dynamic bilingual WhatsApp admission inquiry formatting and localized form error feedback.
 1. **Official School Logo & Real Imagery**: High-res logo in sticky navbar, footer, and favicon, paired with authentic campus photography.
 2. **Top Announcement & Utility Bar**: Displays school motto, operational hours, helpline numbers, and location quick-links.
 3. **Sticky Header & Accessible Navigation**:

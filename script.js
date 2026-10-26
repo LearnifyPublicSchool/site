@@ -8,6 +8,30 @@ document.addEventListener('DOMContentLoaded', () => {
   'use strict';
 
   /* --------------------------------------------------------------------------
+     0. BILINGUAL LANGUAGE SWITCHER & I18N INITIALIZATION
+     -------------------------------------------------------------------------- */
+  const initLanguage = () => {
+    if (typeof window.applyLanguage === 'function') {
+      const initialLang = typeof window.getSavedLanguage === 'function' ? window.getSavedLanguage() : 'en';
+      window.applyLanguage(initialLang);
+    }
+
+    // Attach click listeners to all language switcher buttons
+    const langButtons = document.querySelectorAll('[data-lang-code]');
+    langButtons.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const selectedLang = btn.getAttribute('data-lang-code');
+        if (selectedLang && typeof window.applyLanguage === 'function') {
+          window.applyLanguage(selectedLang);
+        }
+      });
+    });
+  };
+
+  initLanguage();
+
+  /* --------------------------------------------------------------------------
      1. STICKY NAVBAR SCROLL EFFECT
      -------------------------------------------------------------------------- */
   const header = document.getElementById('site-header');
@@ -172,8 +196,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (lightboxTitle && title) lightboxTitle.textContent = title.textContent;
     if (lightboxDesc && caption) lightboxDesc.textContent = caption.textContent;
     if (lightboxCategory && categoryPill) lightboxCategory.textContent = categoryPill.textContent;
-    if (lightboxCounter) lightboxCounter.textContent = `${index + 1} of ${activeGalleryItems.length}`;
+    if (lightboxCounter) {
+      const isHindi = typeof window.getCurrentLanguage === 'function' && window.getCurrentLanguage() === 'hi';
+      lightboxCounter.textContent = isHindi 
+        ? `${activeGalleryItems.length} में से ${index + 1}` 
+        : `${index + 1} of ${activeGalleryItems.length}`;
+    }
   };
+
+  // Re-render open lightbox content on language change
+  window.addEventListener('learnify:languageChanged', () => {
+    if (lightboxModal && lightboxModal.style.display === 'flex') {
+      updateLightboxContent(currentPhotoIndex);
+    }
+  });
 
   const openLightbox = (card) => {
     // Collect all currently visible (non-hidden) gallery cards
@@ -342,7 +378,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Parent Name Validation
     const nameVal = parentNameInput.value.trim();
     if (!nameVal || nameVal.length < 3) {
-      parentNameError.textContent = 'Please provide a valid full parent name (min 3 characters).';
+      parentNameError.textContent = typeof window.t === 'function' 
+        ? window.t('val_name_error') 
+        : 'Please provide a valid full parent name (min 3 characters).';
       parentNameInput.classList.add('is-invalid');
       isValid = false;
     }
@@ -353,11 +391,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const general10Digit = /^\d{10}$/;
 
     if (!phoneVal) {
-      contactPhoneError.textContent = 'Contact number is required.';
+      contactPhoneError.textContent = typeof window.t === 'function' 
+        ? window.t('val_phone_required') 
+        : 'Contact number is required.';
       contactPhoneInput.classList.add('is-invalid');
       isValid = false;
     } else if (!general10Digit.test(phoneVal)) {
-      contactPhoneError.textContent = 'Please enter a valid 10-digit phone number without spaces or symbols.';
+      contactPhoneError.textContent = typeof window.t === 'function' 
+        ? window.t('val_phone_invalid') 
+        : 'Please enter a valid 10-digit phone number without spaces or symbols.';
       contactPhoneInput.classList.add('is-invalid');
       isValid = false;
     }
@@ -365,7 +407,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. Child Age Validation
     const ageVal = parseInt(childAgeInput.value, 10);
     if (!ageVal || isNaN(ageVal) || ageVal < 2 || ageVal > 15) {
-      childAgeError.textContent = 'Enter child age between 2 and 15 years.';
+      childAgeError.textContent = typeof window.t === 'function' 
+        ? window.t('val_age_error') 
+        : 'Enter child age between 2 and 15 years.';
       childAgeInput.classList.add('is-invalid');
       isValid = false;
     }
@@ -373,7 +417,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. Target Grade Selection
     const gradeVal = targetGradeSelect.value;
     if (!gradeVal) {
-      targetGradeError.textContent = 'Please select the grade you are applying for.';
+      targetGradeError.textContent = typeof window.t === 'function' 
+        ? window.t('val_grade_error') 
+        : 'Please select the grade you are applying for.';
       targetGradeSelect.classList.add('is-invalid');
       isValid = false;
     }
@@ -391,7 +437,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Enter Loading State
       if (submitBtn) submitBtn.disabled = true;
-      if (btnText) btnText.textContent = 'Connecting to WhatsApp...';
+      if (btnText) btnText.textContent = typeof window.t === 'function' 
+        ? window.t('val_submitting') 
+        : 'Connecting to WhatsApp...';
       if (btnSpinner) btnSpinner.style.display = 'inline-block';
 
       // Capture entered values
@@ -401,19 +449,30 @@ document.addEventListener('DOMContentLoaded', () => {
       const enteredGrade = targetGradeSelect ? targetGradeSelect.value : '';
       const enteredNotes = inquiryMessageInput ? inquiryMessageInput.value.trim() : '';
 
-      // Format WhatsApp Message for Direct Dispatch
+      // Format WhatsApp Message for Direct Dispatch (Bilingual Context)
       const schoolWhatsAppNumber = '919406037165';
-      const waText = 
-        `*New Admission Inquiry - Learnify Public School*\n` +
-        `----------------------------------------\n` +
-        `👤 *Parent Name:* ${enteredParent}\n` +
-        `📞 *Contact Number:* +91 ${enteredPhone}\n` +
-        `🎂 *Child's Age:* ${enteredAge} Years\n` +
-        `📚 *Grade Applying For:* ${enteredGrade}\n` +
-        (enteredNotes ? `💬 *Notes / Transport:* ${enteredNotes}\n` : ``) +
-        `📅 *Session:* 2026-27\n` +
-        `----------------------------------------\n` +
-        `Please share admission guidelines and schedule our campus visit.`;
+      const isHindi = typeof window.getCurrentLanguage === 'function' && window.getCurrentLanguage() === 'hi';
+      const waText = isHindi
+        ? `*नया प्रवेश पूछताछ (New Admission Inquiry) - Learnify Public School*\n` +
+          `----------------------------------------\n` +
+          `👤 *अभिभावक का नाम (Parent Name):* ${enteredParent}\n` +
+          `📞 *मोबाइल नंबर (Contact Number):* +91 ${enteredPhone}\n` +
+          `🎂 *बच्चे की आयु (Child's Age):* ${enteredAge} वर्ष (Years)\n` +
+          `📚 *कक्षा (Grade Applying For):* ${enteredGrade}\n` +
+          (enteredNotes ? `💬 *नोट / ट्रांसपोर्ट (Notes):* ${enteredNotes}\n` : ``) +
+          `📅 *सत्र (Session):* 2026-27\n` +
+          `----------------------------------------\n` +
+          `कृपया प्रवेश नियम एवं स्कूल भ्रमण (Campus Visit) की जानकारी साझा करें।`
+        : `*New Admission Inquiry - Learnify Public School*\n` +
+          `----------------------------------------\n` +
+          `👤 *Parent Name:* ${enteredParent}\n` +
+          `📞 *Contact Number:* +91 ${enteredPhone}\n` +
+          `🎂 *Child's Age:* ${enteredAge} Years\n` +
+          `📚 *Grade Applying For:* ${enteredGrade}\n` +
+          (enteredNotes ? `💬 *Notes / Transport:* ${enteredNotes}\n` : ``) +
+          `📅 *Session:* 2026-27\n` +
+          `----------------------------------------\n` +
+          `Please share admission guidelines and schedule our campus visit.`;
 
       const whatsappUrl = `https://wa.me/${schoolWhatsAppNumber}?text=${encodeURIComponent(waText)}`;
 
@@ -427,7 +486,9 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         // Reset button states
         if (submitBtn) submitBtn.disabled = false;
-        if (btnText) btnText.textContent = 'Submit Inquiry via WhatsApp';
+        if (btnText) btnText.textContent = typeof window.t === 'function' 
+          ? window.t('form_submit_btn') 
+          : 'Submit Inquiry via WhatsApp';
         if (btnSpinner) btnSpinner.style.display = 'none';
 
         // Populate and open success modal

@@ -59,8 +59,8 @@
   --radius-full: 9999px;
 
   /* Font Families */
-  --font-heading: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Outfit', 'Noto Sans Devanagari', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Transitions */
   --transition-fast: 0.18s ease;
@@ -456,6 +456,163 @@ ul, ol {
   align-items: center;
   gap: 0.85rem;
   flex-shrink: 0;
+}
+
+/* Language Switcher Component */
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  background-color: #F1F5F9;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  gap: 2px;
+  user-select: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.site-header.scrolled .lang-switch {
+  background-color: #F8FAFC;
+}
+
+.lang-btn {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 0.32rem 0.75rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  line-height: 1.2;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lang-btn:hover {
+  color: var(--color-primary);
+}
+
+.lang-btn.active {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  box-shadow: 0 2px 6px rgba(37, 88, 184, 0.32);
+}
+
+.top-lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: 0.5rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.top-lang-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  padding: 0.15rem 0.35rem;
+  border-radius: var(--radius-xs);
+  transition: color var(--transition-fast), background var(--transition-fast);
+  font-weight: 500;
+  font-family: inherit;
+}
+
+.top-lang-btn:hover,
+.top-lang-btn.active {
+  color: #FFFFFF;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Mobile Navigation Language Switcher */
+.nav-item-lang {
+  width: 100%;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border-light);
+  margin-top: 0.5rem;
+}
+
+.mobile-lang-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 1rem;
+}
+
+.mobile-lang-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.mobile-lang-options {
+  display: inline-flex;
+  background-color: #F1F5F9;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 2px;
+  gap: 2px;
+}
+
+.mobile-lang-btn {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: inherit;
+}
+
+.mobile-lang-btn.active {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  box-shadow: 0 2px 6px rgba(37, 88, 184, 0.3);
+}
+
+/* Hindi Mode Typography Enhancements */
+body[data-lang="hi"] {
+  font-family: 'Noto Sans Devanagari', 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: 0;
+}
+
+body[data-lang="hi"] h1,
+body[data-lang="hi"] h2,
+body[data-lang="hi"] h3,
+body[data-lang="hi"] h4,
+body[data-lang="hi"] .hero-heading,
+body[data-lang="hi"] .section-title,
+body[data-lang="hi"] .offering-title,
+body[data-lang="hi"] .box-title {
+  font-family: 'Noto Sans Devanagari', 'Outfit', sans-serif;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+body[data-lang="hi"] .nav-link,
+body[data-lang="hi"] .btn,
+body[data-lang="hi"] .filter-btn,
+body[data-lang="hi"] .hero-chip,
+body[data-lang="hi"] .section-tag,
+body[data-lang="hi"] .status-pill {
+  font-family: 'Noto Sans Devanagari', 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: 0;
+}
+
+body[data-lang="hi"] .hero-heading {
+  font-size: clamp(2rem, 3.8vw, 2.85rem);
 }
 
 .nav-cta {
