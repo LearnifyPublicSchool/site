@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close menu when clicking any nav link
     navLinks.forEach((link) => {
       link.addEventListener('click', () => {
-        if (window.innerWidth <= 768) {
+        if (primaryNav.classList.contains('open')) {
           closeMenu();
         }
       });
@@ -102,6 +102,166 @@ document.addEventListener('DOMContentLoaded', () => {
     }, observerOptions);
 
     sections.forEach((section) => sectionObserver.observe(section));
+  }
+
+  /* --------------------------------------------------------------------------
+     3B. INTERACTIVE CAMPUS GALLERY FILTER TABS
+     -------------------------------------------------------------------------- */
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  const galleryCards = document.querySelectorAll('.gallery-card');
+
+  if (filterButtons.length > 0 && galleryCards.length > 0) {
+    filterButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        // Update active tab button
+        filterButtons.forEach((b) => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+
+        const selectedFilter = btn.getAttribute('data-filter');
+
+        // Filter cards with smooth visibility toggle
+        galleryCards.forEach((card) => {
+          const cardCategory = card.getAttribute('data-category');
+          if (selectedFilter === 'all' || cardCategory === selectedFilter) {
+            card.classList.remove('hidden');
+          } else {
+            card.classList.add('hidden');
+          }
+        });
+      });
+    });
+  }
+
+  /* --------------------------------------------------------------------------
+     3C. INTERACTIVE LIGHTBOX MODAL (KEYBOARD, TOUCH & ARROWS)
+     -------------------------------------------------------------------------- */
+  const lightboxModal = document.getElementById('gallery-lightbox');
+  const lightboxImg = document.getElementById('lightbox-active-img');
+  const lightboxTitle = document.getElementById('lightbox-title');
+  const lightboxDesc = document.getElementById('lightbox-desc');
+  const lightboxCategory = document.getElementById('lightbox-category');
+  const lightboxCounter = document.getElementById('lightbox-counter');
+  const lightboxCloseBtn = document.getElementById('lightbox-close');
+  const lightboxPrevBtn = document.getElementById('lightbox-prev');
+  const lightboxNextBtn = document.getElementById('lightbox-next');
+
+  let activeGalleryItems = [];
+  let currentPhotoIndex = 0;
+
+  const updateLightboxContent = (index) => {
+    if (!activeGalleryItems[index]) return;
+    const card = activeGalleryItems[index];
+    const img = card.querySelector('img');
+    const title = card.querySelector('.gallery-img-title');
+    const caption = card.querySelector('.gallery-img-caption');
+    const categoryPill = card.querySelector('.gallery-category-pill');
+
+    if (lightboxImg && img) {
+      lightboxImg.style.opacity = '0';
+      setTimeout(() => {
+        lightboxImg.src = img.src;
+        lightboxImg.alt = img.alt || '';
+        lightboxImg.style.opacity = '1';
+      }, 100);
+    }
+
+    if (lightboxTitle && title) lightboxTitle.textContent = title.textContent;
+    if (lightboxDesc && caption) lightboxDesc.textContent = caption.textContent;
+    if (lightboxCategory && categoryPill) lightboxCategory.textContent = categoryPill.textContent;
+    if (lightboxCounter) lightboxCounter.textContent = `${index + 1} of ${activeGalleryItems.length}`;
+  };
+
+  const openLightbox = (card) => {
+    // Collect all currently visible (non-hidden) gallery cards
+    activeGalleryItems = Array.from(galleryCards).filter((c) => !c.classList.contains('hidden'));
+    const index = activeGalleryItems.indexOf(card);
+    currentPhotoIndex = index >= 0 ? index : 0;
+
+    updateLightboxContent(currentPhotoIndex);
+
+    if (lightboxModal) {
+      lightboxModal.style.display = 'flex';
+      lightboxModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+      if (lightboxCloseBtn) lightboxCloseBtn.focus();
+    }
+  };
+
+  const closeLightbox = () => {
+    if (lightboxModal) {
+      lightboxModal.style.display = 'none';
+      lightboxModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+  };
+
+  const showNextPhoto = () => {
+    if (activeGalleryItems.length === 0) return;
+    currentPhotoIndex = (currentPhotoIndex + 1) % activeGalleryItems.length;
+    updateLightboxContent(currentPhotoIndex);
+  };
+
+  const showPrevPhoto = () => {
+    if (activeGalleryItems.length === 0) return;
+    currentPhotoIndex = (currentPhotoIndex - 1 + activeGalleryItems.length) % activeGalleryItems.length;
+    updateLightboxContent(currentPhotoIndex);
+  };
+
+  // Attach card click handlers
+  galleryCards.forEach((card) => {
+    card.addEventListener('click', () => openLightbox(card));
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openLightbox(card);
+      }
+    });
+  });
+
+  // Modal navigation & controls
+  if (lightboxCloseBtn) lightboxCloseBtn.addEventListener('click', closeLightbox);
+  if (lightboxNextBtn) lightboxNextBtn.addEventListener('click', showNextPhoto);
+  if (lightboxPrevBtn) lightboxPrevBtn.addEventListener('click', showPrevPhoto);
+
+  if (lightboxModal) {
+    lightboxModal.addEventListener('click', (e) => {
+      if (e.target === lightboxModal) {
+        closeLightbox();
+      }
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (lightboxModal.style.display === 'flex') {
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowRight') showNextPhoto();
+        if (e.key === 'ArrowLeft') showPrevPhoto();
+      }
+    });
+
+    // Touch swipe support for mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    lightboxModal.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    lightboxModal.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      const diffX = touchEndX - touchStartX;
+      if (Math.abs(diffX) > 45) {
+        if (diffX < 0) {
+          showNextPhoto(); // Swiped left -> next
+        } else {
+          showPrevPhoto(); // Swiped right -> prev
+        }
+      }
+    }, { passive: true });
   }
 
   /* --------------------------------------------------------------------------
@@ -231,19 +391,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Enter Loading State
       if (submitBtn) submitBtn.disabled = true;
-      if (btnText) btnText.textContent = 'Submitting Inquiry...';
+      if (btnText) btnText.textContent = 'Connecting to WhatsApp...';
       if (btnSpinner) btnSpinner.style.display = 'inline-block';
 
       // Capture entered values
-      const enteredParent = parentNameInput.value.trim();
-      const enteredPhone = contactPhoneInput.value.trim();
-      const enteredGrade = targetGradeSelect.value;
+      const enteredParent = parentNameInput ? parentNameInput.value.trim() : '';
+      const enteredPhone = contactPhoneInput ? contactPhoneInput.value.trim() : '';
+      const enteredAge = childAgeInput ? childAgeInput.value.trim() : '';
+      const enteredGrade = targetGradeSelect ? targetGradeSelect.value : '';
+      const enteredNotes = inquiryMessageInput ? inquiryMessageInput.value.trim() : '';
 
-      // Simulate asynchronous transmission / client-side processing
+      // Format WhatsApp Message for Direct Dispatch
+      const schoolWhatsAppNumber = '919406037165';
+      const waText = 
+        `*New Admission Inquiry - Learnify Public School*\n` +
+        `----------------------------------------\n` +
+        `👤 *Parent Name:* ${enteredParent}\n` +
+        `📞 *Contact Number:* +91 ${enteredPhone}\n` +
+        `🎂 *Child's Age:* ${enteredAge} Years\n` +
+        `📚 *Grade Applying For:* ${enteredGrade}\n` +
+        (enteredNotes ? `💬 *Notes / Transport:* ${enteredNotes}\n` : ``) +
+        `📅 *Session:* 2026-27\n` +
+        `----------------------------------------\n` +
+        `Please share admission guidelines and schedule our campus visit.`;
+
+      const whatsappUrl = `https://wa.me/${schoolWhatsAppNumber}?text=${encodeURIComponent(waText)}`;
+
+      // Direct WhatsApp Transmission
+      try {
+        window.open(whatsappUrl, '_blank');
+      } catch (err) {
+        console.warn('Popup blocked, modal provides manual link fallback.', err);
+      }
+
       setTimeout(() => {
         // Reset button states
         if (submitBtn) submitBtn.disabled = false;
-        if (btnText) btnText.textContent = 'Submit Admission Inquiry';
+        if (btnText) btnText.textContent = 'Submit Inquiry via WhatsApp';
         if (btnSpinner) btnSpinner.style.display = 'none';
 
         // Populate and open success modal
@@ -251,16 +435,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalChildGrade) modalChildGrade.textContent = enteredGrade;
         if (modalPhone) modalPhone.textContent = `+91 ${enteredPhone}`;
 
+        const modalWaLink = document.getElementById('modal-whatsapp-link');
+        if (modalWaLink) {
+          modalWaLink.href = whatsappUrl;
+        }
+
         if (successModal) {
           successModal.style.display = 'flex';
-          // Move focus to modal
-          if (closeModalBtn) closeModalBtn.focus();
+          if (modalWaLink) {
+            modalWaLink.focus();
+          } else if (closeModalBtn) {
+            closeModalBtn.focus();
+          }
         }
 
         // Reset form inputs
         admissionForm.reset();
         clearErrors();
-      }, 750);
+      }, 600);
     });
 
     // Clear field-level error dynamically when user types
